@@ -1,18 +1,50 @@
-const express = require('express');
-const mongoose = require('mongoose');
-const cors = require('cors');
-require('dotenv').config();
+
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
+const PORT = process.env.PORT || 3000;
+
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Conectado ao MongoDB'))
-  .catch(err => console.error('Erro ao conectar:', err));
+// Modelo de Oferta
+const Oferta = mongoose.model("Oferta", new mongoose.Schema({
+  titulo: String,
+  descricao: String,
+  preco: Number,
+  fornecedor: String,
+  horario: String,
+  criadoEm: { type: Date, default: Date.now }
+}));
 
-const paymentRoutes = require('./routes/payment');
-app.use('/api/payment', paymentRoutes);
+// Conexão com MongoDB
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log("MongoDB conectado"))
+.catch((err) => console.error("Erro ao conectar:", err));
 
-const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => console.log(`Servidor rodando na porta ${PORT}`));
+// Rotas
+app.get("/api/ofertas", async (req, res) => {
+  const ofertas = await Oferta.find();
+  res.json(ofertas);
+});
+
+app.post("/api/ofertas", async (req, res) => {
+  const oferta = new Oferta(req.body);
+  await oferta.save();
+  res.status(201).json(oferta);
+});
+
+// Rota padrão
+app.get("/", (req, res) => {
+  res.send("API está rodando");
+});
+
+app.listen(PORT, () => {
+  console.log(`Servidor rodando na porta ${PORT}`);
+});
