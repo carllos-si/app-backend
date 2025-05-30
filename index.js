@@ -1,4 +1,3 @@
-
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -35,7 +34,14 @@ app.get("/api/ofertas", async (req, res) => {
 });
 
 app.post("/api/ofertas", async (req, res) => {
-  const oferta = new Oferta(req.body);
+  const { title, description, price } = req.body;
+
+  const oferta = new Oferta({
+    titulo: title,
+    descricao: description,
+    preco: price
+  });
+
   await oferta.save();
   res.status(201).json(oferta);
 });
